@@ -100,6 +100,7 @@ function App() {
           title: editingTask.title,
           description: editingTask.description,
           priority: editingTask.priority,
+          status: editingTask.status,
         }),
       });
 
@@ -107,6 +108,9 @@ function App() {
         setEditingTask(null);
         fetchTasks();
         fetchStats();
+      } else {
+        const errorData = await response.json();
+        setError(`Failed to update task: ${errorData.error || 'Unknown error'}`);
       }
     } catch (err) {
       console.error('Error updating task:', err);
@@ -321,6 +325,14 @@ function App() {
                 <option value="low">Low Priority</option>
                 <option value="medium">Medium Priority</option>
                 <option value="high">High Priority</option>
+              </select>
+              <select
+                value={editingTask.status}
+                onChange={e => setEditingTask({ ...editingTask, status: e.target.value })}
+              >
+                <option value="pending">Pending</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
               </select>
               <div className="modal-buttons">
                 <button type="submit" className="btn-primary">
