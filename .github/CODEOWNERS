@@ -1,0 +1,12 @@
+# Default owners for everything in the repo
+* @dukuzejean09 @janvierhakorimana @gasasirajames @kirezi-cynthia
+
+# Infrastructure code
+/terraform/ @dukuzejean09
+/ansible/ @kirezi-cynthia
+
+# CI/CD pipelines
+/.github/workflows/ @gasasirajames
+
+# Security configurations
+/security/ @janvierhakorimana
