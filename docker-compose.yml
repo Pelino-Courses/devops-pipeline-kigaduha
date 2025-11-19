@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: devops-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: devops-pipeline
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - devops-network
+
+  api:
+    build: .
+    container_name: devops-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/devops-pipeline
+      - JWT_SECRET=dev-secret-key-change-in-production
+      - JWT_EXPIRES_IN=24h
+      - CORS_ORIGIN=*
+    depends_on:
+      - mongodb
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - devops-network
+    command: npm run dev
+
+volumes:
+  mongodb_data:
+
+networks:
+  devops-network:
+    driver: bridge
