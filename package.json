@@ -10,11 +10,12 @@
     "db:seed": "ts-node prisma/seed.ts",
     "db:reset": "prisma migrate reset --force",
     "db:studio": "prisma studio",
+    "db:test": "ts-node src/test-db.ts",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f postgres",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run db:test"
   },
   "keywords": [],
   "author": "",
