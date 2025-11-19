@@ -1,310 +1,345 @@
-# devops-pipeline-kigaduha
+# DevOps Pipeline Kigaduha
 
-End-to-End DevOps Pipeline Implementation - Task Management REST API
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![GitHub Issues](https://img.shields.io/github/issues/dukuzejean09/devops-pipeline-kigaduha)](https://github.com/dukuzejean09/devops-pipeline-kigaduha/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/dukuzejean09/devops-pipeline-kigaduha)](https://github.com/dukuzejean09/devops-pipeline-kigaduha/pulls)
+[![Project Board](https://img.shields.io/badge/Project-Board-brightgreen)](https://github.com/users/dukuzejean09/projects/2)
 
-## 📋 Overview
+End-to-End DevOps Pipeline Implementation with automated CI/CD, infrastructure as code, and comprehensive project management.
 
-A fully functional REST API for task management with JWT authentication, built with Express.js and MongoDB. This project demonstrates modern DevOps practices including containerization, CI/CD, API documentation, and comprehensive testing.
+---
 
-## 🚀 Features
+## 📋 Table of Contents
 
-- **JWT Authentication**: Secure user registration and login
-- **Task CRUD Operations**: Complete task management (Create, Read, Update, Delete)
-- **Task Fields**: Title, description, status, priority, due date, assignee, labels
-- **API Documentation**: Interactive Swagger/OpenAPI docs
-- **Rate Limiting**: Protection against brute-force attacks and API abuse
-- **Docker Support**: Full containerization with docker-compose
-- **Automated Testing**: Comprehensive Jest test suite (25 tests, 88%+ coverage)
-- **Code Quality**: ESLint with Airbnb style guide
-- **CI/CD**: GitHub Actions workflows for automated testing and linting
+- [Overview](#overview)
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Development Workflow](#development-workflow)
+- [CI/CD Pipeline](#cicd-pipeline)
+- [Project Board Automation](#project-board-automation)
+- [Contributing](#contributing)
+- [Branch Protection Rules](#branch-protection-rules)
+- [Code of Conduct](#code-of-conduct)
+- [License](#license)
 
-## 🛠️ Tech Stack
+---
 
-- **Backend**: Node.js, Express.js
-- **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT (jsonwebtoken)
-- **Security**: Helmet, bcryptjs, CORS, express-rate-limit
-- **Validation**: express-validator
-- **Testing**: Jest, Supertest
-- **Documentation**: Swagger (swagger-jsdoc, swagger-ui-express)
-- **Code Quality**: ESLint (Airbnb config)
-- **DevOps**: Docker, docker-compose, GitHub Actions
+## 🎯 Overview
 
-## 📦 Installation
+DevOps Pipeline Kigaduha is a comprehensive DevOps implementation project that demonstrates best practices for continuous integration, continuous deployment, infrastructure management, and automated project workflows. This repository serves as a template and learning resource for building robust DevOps pipelines.
 
-### Prerequisites
+### Key Objectives
 
-- Node.js 18+ and npm
-- MongoDB (local or Docker)
-- Docker and docker-compose (optional)
+- Implement automated CI/CD pipelines using GitHub Actions
+- Establish infrastructure as code practices
+- Automate project management with GitHub Projects
+- Enforce security best practices
+- Maintain comprehensive documentation
+- Foster collaborative development
 
-### Local Development
+---
 
-1. Clone the repository:
-```bash
-git clone https://github.com/dukuzejean09/devops-pipeline-kigaduha.git
-cd devops-pipeline-kigaduha
-```
+## ✨ Features
 
-2. Install dependencies:
-```bash
-npm install
-```
+### Automated Project Management
 
-3. Create environment file:
-```bash
-cp .env.example .env
-```
+- **Issue Automation**: New issues automatically added to project board (Backlog status)
+- **Assignment Tracking**: Assigned issues move to "In Progress"
+- **PR Tracking**: Pull requests automatically move to "In Review"
+- **Completion Tracking**: Merged PRs move to "Done"
 
-4. Update `.env` with your configuration:
-```env
-PORT=3000
-NODE_ENV=development
-MONGODB_URI=mongodb://localhost:27017/devops-pipeline
-JWT_SECRET=your-secret-key-here
-JWT_EXPIRES_IN=24h
-CORS_ORIGIN=http://localhost:3000
-```
+### Security & Quality
 
-5. Start MongoDB (if running locally):
-```bash
-# macOS
-brew services start mongodb-community
+- Pre-commit hooks for code quality
+- Dependabot for dependency updates
+- Secret detection and scanning
+- Code linting and formatting
 
-# Linux
-sudo systemctl start mongod
-```
+### Developer Experience
 
-6. Run the development server:
-```bash
-npm run dev
-```
+- Issue templates for bugs, features, and DevOps tasks
+- Comprehensive contribution guidelines
+- Code of conduct for community standards
+- Clear documentation and examples
 
-The API will be available at `http://localhost:3000`
+---
 
-### Docker Development
-
-1. Start all services with docker-compose:
-```bash
-docker-compose up -d
-```
-
-2. View logs:
-```bash
-docker-compose logs -f api
-```
-
-3. Stop services:
-```bash
-docker-compose down
-```
-
-## 📚 API Endpoints
-
-### Authentication
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| POST | `/api/auth/register` | Register new user | No |
-| POST | `/api/auth/login` | Login user | No |
-| GET | `/api/auth/me` | Get current user | Yes |
-
-### Tasks
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/tasks` | Get all user tasks | Yes |
-| POST | `/api/tasks` | Create new task | Yes |
-| GET | `/api/tasks/:id` | Get single task | Yes |
-| PATCH | `/api/tasks/:id` | Update task | Yes |
-| DELETE | `/api/tasks/:id` | Delete task | Yes |
-
-### API Documentation
-
-Interactive API documentation is available at:
-- **Swagger UI**: `http://localhost:3000/api-docs`
-
-### Example Requests
-
-#### Register User
-```bash
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "johndoe",
-    "email": "john@example.com",
-    "password": "password123"
-  }'
-```
-
-#### Login
-```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "john@example.com",
-    "password": "password123"
-  }'
-```
-
-#### Create Task
-```bash
-curl -X POST http://localhost:3000/api/tasks \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "title": "Complete API documentation",
-    "description": "Add comprehensive API docs",
-    "status": "todo",
-    "priority": "high",
-    "dueDate": "2024-12-31",
-    "assignee": "John Doe",
-    "labels": ["documentation", "urgent"]
-  }'
-```
-
-#### Get All Tasks
-```bash
-curl -X GET http://localhost:3000/api/tasks \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
-
-## 🧪 Testing
-
-Run tests:
-```bash
-npm test
-```
-
-Run tests in watch mode:
-```bash
-npm run test:watch
-```
-
-Tests include:
-- Authentication (register, login, protected routes)
-- Task CRUD operations
-- Input validation
-- Authorization checks
-- Error handling
-
-## 🔍 Code Quality
-
-Run ESLint:
-```bash
-npm run lint
-```
-
-Fix ESLint issues automatically:
-```bash
-npm run lint:fix
-```
-
-## 🏗️ Project Structure
+## 📁 Project Structure
 
 ```
 devops-pipeline-kigaduha/
-├── src/
-│   ├── config/          # Configuration files
-│   │   ├── database.js  # MongoDB connection
-│   │   └── swagger.js   # Swagger configuration
-│   ├── controllers/     # Request handlers
-│   │   ├── authController.js
-│   │   └── taskController.js
-│   ├── middleware/      # Custom middleware
-│   │   ├── auth.js      # JWT authentication
-│   │   └── errorHandler.js
-│   ├── models/          # Mongoose models
-│   │   ├── User.js
-│   │   └── Task.js
-│   ├── routes/          # API routes
-│   │   ├── authRoutes.js
-│   │   └── taskRoutes.js
-│   ├── utils/           # Utility functions
-│   │   └── jwt.js
-│   ├── app.js           # Express app setup
-│   └── index.js         # Server entry point
-├── tests/               # Test files
-│   ├── setup.js
-│   ├── auth.test.js
-│   └── task.test.js
 ├── .github/
-│   └── workflows/       # GitHub Actions
-│       ├── lint-test.yml
-│       └── project-automation.yml
-├── docker-compose.yml   # Docker compose config
-├── Dockerfile           # Docker image config
-├── .eslintrc.js         # ESLint configuration
-├── jest.config.js       # Jest configuration
-├── package.json         # Dependencies and scripts
-└── README.md            # Documentation
+│   ├── ISSUE_TEMPLATE/         # Issue templates
+│   │   ├── bug_report.md
+│   │   ├── feature_request.md
+│   │   └── devops_task.md
+│   ├── workflows/              # GitHub Actions workflows
+│   │   └── project-automation.yml
+│   ├── dependabot.yml          # Dependabot configuration
+│   └── CODEOWNERS              # Code ownership rules
+├── CODE_OF_CONDUCT.md          # Community guidelines
+├── CONTRIBUTING.md             # Contribution guide
+├── LICENSE                     # Apache 2.0 License
+├── README.md                   # This file
+├── .gitignore                  # Git ignore rules
+└── .pre-commit-config.yaml     # Pre-commit hooks configuration
 ```
 
-## 🚢 Deployment
+---
 
-### Environment Variables for Production
+## 🚀 Getting Started
 
-Ensure these environment variables are set in production:
+### Prerequisites
 
-```env
-NODE_ENV=production
-PORT=3000
-MONGODB_URI=your-production-mongodb-uri
-JWT_SECRET=your-strong-secret-key
-JWT_EXPIRES_IN=24h
-CORS_ORIGIN=https://your-frontend-domain.com
+Ensure you have the following tools installed:
+
+- **Git**: Version control system
+- **Pre-commit**: For running pre-commit hooks (optional but recommended)
+- **Python**: Required for some pre-commit hooks (Python 3.8+)
+- **Node.js**: Required if working with JavaScript/TypeScript (Node 16+)
+
+### Installation
+
+1. **Clone the repository**:
+
+   ```bash
+   git clone https://github.com/dukuzejean09/devops-pipeline-kigaduha.git
+   cd devops-pipeline-kigaduha
+   ```
+
+2. **Set up pre-commit hooks** (recommended):
+
+   ```bash
+   # Install pre-commit
+   pip install pre-commit
+
+   # Install the git hooks
+   pre-commit install
+   pre-commit install --hook-type commit-msg
+   ```
+
+3. **Run pre-commit on all files** (optional):
+
+   ```bash
+   pre-commit run --all-files
+   ```
+
+### Quick Start
+
+1. **Fork the repository** on GitHub
+2. **Create a feature branch**:
+
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+3. **Make your changes**
+4. **Commit with conventional commits**:
+
+   ```bash
+   git commit -m "feat: add new feature"
+   ```
+
+5. **Push to your fork**:
+
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+6. **Open a Pull Request**
+
+---
+
+## 🔧 Development Workflow
+
+### Branching Strategy
+
+- `main`: Production-ready code (protected)
+- `feature/*`: New features
+- `fix/*`: Bug fixes
+- `docs/*`: Documentation updates
+- `chore/*`: Maintenance tasks
+
+### Commit Message Convention
+
+We follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
 ```
 
-### Docker Production Build
+**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`
 
-Build production image:
+**Example**:
+```
+feat(ci): add automated testing workflow
+
+Implement GitHub Actions workflow for running tests on pull requests.
+Includes unit tests, integration tests, and code coverage reporting.
+
+Closes #42
+```
+
+### Pre-commit Hooks
+
+Pre-commit hooks automatically run checks before each commit:
+
+- Trailing whitespace removal
+- YAML/JSON syntax validation
+- Large file detection
+- Private key detection
+- Markdown linting
+- Shell script linting
+- Secret detection
+
+To bypass hooks (not recommended):
 ```bash
-docker build -t devops-api:latest .
+git commit --no-verify
 ```
 
-Run production container:
-```bash
-docker run -d \
-  -p 3000:3000 \
-  -e NODE_ENV=production \
-  -e MONGODB_URI=your-mongodb-uri \
-  -e JWT_SECRET=your-secret \
-  --name devops-api \
-  devops-api:latest
+---
+
+## 🔄 CI/CD Pipeline
+
+### GitHub Actions Workflows
+
+#### Project Automation Workflow
+
+**File**: `.github/workflows/project-automation.yml`
+
+**Triggers**:
+- Issue opened → Adds to project board (Backlog)
+- Issue assigned → Moves to In Progress
+- PR opened → Moves to In Review
+- PR merged → Moves to Done
+
+**Required Secret**: `PROJECTS_PAT` (GitHub Personal Access Token with project permissions)
+
+### Setting Up CI/CD
+
+1. **Generate a Personal Access Token**:
+   - Go to GitHub Settings → Developer settings → Personal access tokens
+   - Create token with `project` and `repo` scopes
+   - Add as repository secret named `PROJECTS_PAT`
+
+2. **Configure Project URL**:
+   - Update project URL in `.github/workflows/project-automation.yml`
+   - Default: `https://github.com/users/dukuzejean09/projects/2`
+
+---
+
+## 📊 Project Board Automation
+
+Our project board follows this workflow:
+
+```
+Backlog → In Progress → In Review → Done
 ```
 
-## 🔒 Security
+### Status Transitions
 
-- **Password Security**: Passwords are hashed using bcryptjs with salt rounds
-- **JWT Authentication**: Stateless authentication with token expiration
-- **Rate Limiting**: 
-  - API endpoints: 100 requests per 15 minutes per IP
-  - Auth endpoints: 5 attempts per 15 minutes per IP (protection against brute-force)
-- **HTTP Security**: Helmet.js for security headers
-- **CORS Configuration**: Configurable cross-origin resource sharing
-- **Input Validation**: Server-side validation with express-validator
-- **MongoDB Injection Protection**: Mongoose ODM prevents NoSQL injection
-- **Security Scanning**: CodeQL analysis with zero vulnerabilities
+| Event | From | To |
+|-------|------|-----|
+| Issue opened | - | Backlog |
+| Issue assigned | Backlog | In Progress |
+| PR opened (linked) | In Progress | In Review |
+| PR merged | In Review | Done |
+
+### Using the Project Board
+
+1. **Create an issue** using the appropriate template
+2. **Assign yourself** when you start work (auto-moves to In Progress)
+3. **Create a PR** and link it to the issue (auto-moves to In Review)
+4. **Merge the PR** after approval (auto-moves to Done)
+
+---
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-## 📝 License
+### Quick Contribution Steps
 
-This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
+1. Check existing issues or create a new one
+2. Fork the repository
+3. Create a feature branch
+4. Make your changes
+5. Write/update tests
+6. Update documentation
+7. Submit a pull request
 
-## 👨‍💻 Author
+### Issue Templates
 
-**Jean Dukuze**
+- **Bug Report**: Report bugs or unexpected behavior
+- **Feature Request**: Suggest new features or enhancements
+- **DevOps Task**: Infrastructure, CI/CD, or configuration tasks
+
+---
+
+## 🛡️ Branch Protection Rules
+
+The `main` branch is protected with the following rules:
+
+### Required for Merging
+
+- ✅ Pull request reviews (at least 1 approval)
+- ✅ Status checks must pass
+- ✅ Branch must be up to date
+- ✅ No direct pushes (use pull requests)
+
+### Best Practices
+
+- Create feature branches for all changes
+- Keep commits focused and atomic
+- Write descriptive PR descriptions
+- Link PRs to related issues
+- Respond to review feedback promptly
+
+---
+
+## 📜 Code of Conduct
+
+This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to the project maintainers.
+
+---
+
+## 📄 License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+---
 
 ## 🙏 Acknowledgments
 
-- Express.js team for the excellent framework
-- MongoDB team for the database
-- All open-source contributors
+- GitHub Actions community for workflow examples
+- Contributor Covenant for the Code of Conduct
+- All contributors who help improve this project
 
+---
+
+## 📞 Contact & Support
+
+- **Issues**: [GitHub Issues](https://github.com/dukuzejean09/devops-pipeline-kigaduha/issues)
+- **Project Board**: [GitHub Project](https://github.com/users/dukuzejean09/projects/2)
+- **Maintainer**: [@dukuzejean09](https://github.com/dukuzejean09)
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] Add comprehensive CI/CD workflows
+- [ ] Implement infrastructure as code (Terraform/Ansible)
+- [ ] Set up containerization with Docker
+- [ ] Configure Kubernetes deployments
+- [ ] Add monitoring and observability
+- [ ] Implement automated testing frameworks
+- [ ] Create deployment strategies (blue-green, canary)
+
+---
+
+**Made with ❤️ for the DevOps community**
