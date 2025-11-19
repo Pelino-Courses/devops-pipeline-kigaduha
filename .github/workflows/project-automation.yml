@@ -12,45 +12,41 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add issue to Backlog
-        uses: actions/add-to-project@v0.5.0
+        uses: alex-page/github-project-automation-plus@v0.2.1
         with:
-          project-url: https://github.com/users/dukuzejean09/projects/2
-          field: Status
-          value: Backlog
-          github-token: ${{ secrets.PROJECTS_PAT }}
+          project: "Project #2"
+          column: "Backlog"
+          repo-token: ${{ secrets.PROJECTS_PAT }}
 
   move_to_in_progress:
     if: github.event_name == 'issues' && github.event.action == 'assigned'
     runs-on: ubuntu-latest
     steps:
       - name: Move issue to In Progress
-        uses: actions/add-to-project@v0.5.0
+        uses: alex-page/github-project-automation-plus@v0.2.1
         with:
-          project-url: https://github.com/users/dukuzejean09/projects/2
-          field: Status
-          value: In Progress
-          github-token: ${{ secrets.PROJECTS_PAT }}
+          project: "Project #2"
+          column: "In Progress"
+          repo-token: ${{ secrets.PROJECTS_PAT }}
 
   move_to_in_review:
     if: github.event_name == 'pull_request' && github.event.action == 'opened'
     runs-on: ubuntu-latest
     steps:
       - name: Move PR to In Review
-        uses: actions/add-to-project@v0.5.0
+        uses: alex-page/github-project-automation-plus@v0.2.1
         with:
-          project-url: https://github.com/users/dukuzejean09/projects/2
-          field: Status
-          value: In Review
-          github-token: ${{ secrets.PROJECTS_PAT }}
+          project: "Project #2"
+          column: "In Review"
+          repo-token: ${{ secrets.PROJECTS_PAT }}
 
   move_to_done:
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: Move PR to Done
-        uses: actions/add-to-project@v0.5.0
+        uses: alex-page/github-project-automation-plus@v0.2.1
         with:
-          project-url: https://github.com/users/dukuzejean09/projects/2
-          field: Status
-          value: Done
-          github-token: ${{ secrets.PROJECTS_PAT }}
+          project: "Project #2"
+          column: "Done"
+          repo-token: ${{ secrets.PROJECTS_PAT }}
