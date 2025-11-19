@@ -6,43 +6,47 @@ on:
   pull_request:
     types: [opened, closed]
 
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
 jobs:
-  add_to_backlog:
-    if: github.event_name == 'issues' && github.event.action == 'opened'
+  automate-project:
     runs-on: ubuntu-latest
     steps:
-      - name: Add issue to Backlog
-        uses: actions/add-to-project@v1.0.2
+      # 1. New issue → Status = Backlog
+      - name: Add new issues to Backlog
+        if: github.event_name == 'issues' && github.event.action == 'opened'
+        uses: actions/add-to-project@main
         with:
           project-url: https://github.com/users/dukuzejean09/projects/2
           github-token: ${{ secrets.PROJECTS_PAT }}
+          initial-status: Backlog
 
-  move_to_in_progress:
-    if: github.event_name == 'issues' && github.event.action == 'assigned'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Move issue to In Progress
-        uses: actions/add-to-project@v1.0.2
+      # 2. Issue assigned → Status = In Progress
+      - name: Move assigned issues to In Progress
+        if: github.event_name == 'issues' && github.event.action == 'assigned'
+        uses: actions/add-to-project@main
         with:
           project-url: https://github.com/users/dukuzejean09/projects/2
           github-token: ${{ secrets.PROJECTS_PAT }}
+          initial-status: In Progress   # this moves it if already in the project
 
-  move_to_in_review:
-    if: github.event_name == 'pull_request' && github.event.action == 'opened'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Move PR to In Review
-        uses: actions/add-to-project@v1.0.2
+      # 3. PR opened → Status = In Review
+      - name: Move PR to In Review when opened
+        if: github.event_name == 'pull_request' && github.event.action == 'opened'
+        uses: actions/add-to-project@main
         with:
           project-url: https://github.com/users/dukuzejean09/projects/2
           github-token: ${{ secrets.PROJECTS_PAT }}
+          initial-status: In Review
 
-  move_to_done:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-    steps:
-      - name: Move PR to Done
-        uses: actions/add-to-project@v1.0.2
+      # 4. PR merged → Status = Done
+      - name: Move PR to Done when merged
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+        uses: actions/add-to-project@main
         with:
           project-url: https://github.com/users/dukuzejean09/projects/2
           github-token: ${{ secrets.PROJECTS_PAT }}
+          initial-status: Done
