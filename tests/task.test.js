@@ -8,6 +8,7 @@ const Task = require('../src/models/Task');
 describe('Task API', () => {
   let token;
   let userId;
+  let testUser;
 
   beforeAll(async () => {
     // Connect to test database
@@ -28,19 +29,20 @@ describe('Task API', () => {
     await Task.deleteMany({});
     await User.deleteMany({});
 
-    // Create and login a test user
-    const user = await User.create({
-      username: 'testuser',
-      email: 'test@example.com',
+    // Create a test user
+    testUser = await User.create({
+      username: `testuser_${Date.now()}`,
+      email: `test_${Date.now()}@example.com`,
       password: 'password123',
     });
 
-    userId = user._id;
+    userId = testUser._id;
 
+    // Login to get token
     const loginRes = await request(app)
       .post('/api/auth/login')
       .send({
-        email: 'test@example.com',
+        email: testUser.email,
         password: 'password123',
       });
 
@@ -111,7 +113,7 @@ describe('Task API', () => {
   });
 
   describe('GET /api/tasks', () => {
-    beforeEach(async () => {
+    it('should get all tasks for authenticated user', async () => {
       // Create some test tasks
       await Task.create([
         {
@@ -126,9 +128,7 @@ describe('Task API', () => {
           createdBy: userId,
         },
       ]);
-    });
 
-    it('should get all tasks for authenticated user', async () => {
       const res = await request(app)
         .get('/api/tasks')
         .set('Authorization', `Bearer ${token}`);
@@ -148,20 +148,15 @@ describe('Task API', () => {
   });
 
   describe('GET /api/tasks/:id', () => {
-    let taskId;
-
-    beforeEach(async () => {
+    it('should get a single task by id', async () => {
       const task = await Task.create({
         title: 'Test Task',
         description: 'Test Description',
         createdBy: userId,
       });
-      taskId = task._id;
-    });
 
-    it('should get a single task by id', async () => {
       const res = await request(app)
-        .get(`/api/tasks/${taskId}`)
+        .get(`/api/tasks/${task._id}`)
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.statusCode).toBe(200);
@@ -174,12 +169,17 @@ describe('Task API', () => {
         .get('/api/tasks/invalid-id')
         .set('Authorization', `Bearer ${token}`);
 
-      expect(res.statusCode).toBe(500);
+      expect(res.statusCode).toBe(404);
       expect(res.body.success).toBe(false);
     });
 
     it('should not get task without authentication', async () => {
-      const res = await request(app).get(`/api/tasks/${taskId}`);
+      const task = await Task.create({
+        title: 'Test Task',
+        createdBy: userId,
+      });
+
+      const res = await request(app).get(`/api/tasks/${task._id}`);
 
       expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);
@@ -187,21 +187,16 @@ describe('Task API', () => {
   });
 
   describe('PATCH /api/tasks/:id', () => {
-    let taskId;
-
-    beforeEach(async () => {
+    it('should update a task', async () => {
       const task = await Task.create({
         title: 'Original Task',
         description: 'Original Description',
         status: 'todo',
         createdBy: userId,
       });
-      taskId = task._id;
-    });
 
-    it('should update a task', async () => {
       const res = await request(app)
-        .patch(`/api/tasks/${taskId}`)
+        .patch(`/api/tasks/${task._id}`)
         .set('Authorization', `Bearer ${token}`)
         .send({
           title: 'Updated Task',
@@ -222,13 +217,18 @@ describe('Task API', () => {
           title: 'Updated Task',
         });
 
-      expect(res.statusCode).toBe(500);
+      expect(res.statusCode).toBe(404);
       expect(res.body.success).toBe(false);
     });
 
     it('should not update task without authentication', async () => {
+      const task = await Task.create({
+        title: 'Original Task',
+        createdBy: userId,
+      });
+
       const res = await request(app)
-        .patch(`/api/tasks/${taskId}`)
+        .patch(`/api/tasks/${task._id}`)
         .send({
           title: 'Updated Task',
         });
@@ -239,27 +239,22 @@ describe('Task API', () => {
   });
 
   describe('DELETE /api/tasks/:id', () => {
-    let taskId;
-
-    beforeEach(async () => {
+    it('should delete a task', async () => {
       const task = await Task.create({
         title: 'Task to Delete',
         createdBy: userId,
       });
-      taskId = task._id;
-    });
 
-    it('should delete a task', async () => {
       const res = await request(app)
-        .delete(`/api/tasks/${taskId}`)
+        .delete(`/api/tasks/${task._id}`)
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
 
       // Verify task is deleted
-      const task = await Task.findById(taskId);
-      expect(task).toBeNull();
+      const deletedTask = await Task.findById(task._id);
+      expect(deletedTask).toBeNull();
     });
 
     it('should not delete task with invalid id', async () => {
@@ -267,12 +262,17 @@ describe('Task API', () => {
         .delete('/api/tasks/invalid-id')
         .set('Authorization', `Bearer ${token}`);
 
-      expect(res.statusCode).toBe(500);
+      expect(res.statusCode).toBe(404);
       expect(res.body.success).toBe(false);
     });
 
     it('should not delete task without authentication', async () => {
-      const res = await request(app).delete(`/api/tasks/${taskId}`);
+      const task = await Task.create({
+        title: 'Task to Delete',
+        createdBy: userId,
+      });
+
+      const res = await request(app).delete(`/api/tasks/${task._id}`);
 
       expect(res.statusCode).toBe(401);
       expect(res.body.success).toBe(false);

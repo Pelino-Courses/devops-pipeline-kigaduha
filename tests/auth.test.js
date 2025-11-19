@@ -18,8 +18,8 @@ describe('Auth API', () => {
     await mongoose.connection.close();
   });
 
-  beforeEach(async () => {
-    // Clear users before each test
+  afterEach(async () => {
+    // Clear users after each test to prevent conflicts
     await User.deleteMany({});
   });
 
