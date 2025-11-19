@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
+import AdminDashboard from './AdminDashboard';
 import './App.css';
 
 const API_URL = process.env.REACT_APP_API_URL || '';
 
 function App() {
+  const { user, token, logout } = useAuth();
+  const [showAdmin, setShowAdmin] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [stats, setStats] = useState({ total: 0, pending: 0, in_progress: 0, completed: 0 });
   const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'medium' });
@@ -15,7 +19,12 @@ function App() {
   useEffect(() => {
     fetchTasks();
     fetchStats();
-  }, [filter]);
+  }, [filter, token]);
+
+  const getAuthHeaders = () => ({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  });
 
   const fetchTasks = async () => {
     try {
@@ -23,7 +32,15 @@ function App() {
       const url =
         filter === 'all' ? `${API_URL}/api/v1/tasks` : `${API_URL}/api/v1/tasks?status=${filter}`;
 
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: getAuthHeaders(),
+      });
+
+      if (response.status === 401) {
+        logout();
+        return;
+      }
+
       const data = await response.json();
       setTasks(data.tasks || []);
       setError(null);
@@ -37,7 +54,15 @@ function App() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/v1/tasks/stats`);
+      const response = await fetch(`${API_URL}/api/v1/tasks/stats`, {
+        headers: getAuthHeaders(),
+      });
+
+      if (response.status === 401) {
+        logout();
+        return;
+      }
+
       const data = await response.json();
       setStats(data);
     } catch (err) {
@@ -54,7 +79,7 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/api/v1/tasks`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(newTask),
       });
 
@@ -73,7 +98,7 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/api/v1/tasks/${taskId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ status: newStatus }),
       });
 
@@ -95,7 +120,7 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/api/v1/tasks/${editingTask.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           title: editingTask.title,
           description: editingTask.description,
@@ -126,6 +151,7 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/api/v1/tasks/${taskId}`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
       });
 
       if (response.ok) {
@@ -163,11 +189,47 @@ function App() {
     }
   };
 
+  if (showAdmin && user?.role === 'admin') {
+    return (
+      <div className="App">
+        <header className="App-header">
+          <div>
+            <h1>📋 Task Management App</h1>
+            <p>Admin Mode</p>
+          </div>
+          <div className="user-info">
+            <button onClick={() => setShowAdmin(false)} className="btn-switch">
+              🏠 My Tasks
+            </button>
+            <span className="welcome-text">Welcome, {user?.username}!</span>
+            <button onClick={logout} className="btn-logout">
+              Logout
+            </button>
+          </div>
+        </header>
+        <AdminDashboard />
+      </div>
+    );
+  }
+
   return (
     <div className="App">
       <header className="App-header">
-        <h1>📋 Task Management App</h1>
-        <p>Organize your work efficiently</p>
+        <div>
+          <h1>📋 Task Management App</h1>
+          <p>Organize your work efficiently</p>
+        </div>
+        <div className="user-info">
+          {user?.role === 'admin' && (
+            <button onClick={() => setShowAdmin(true)} className="btn-admin">
+              👑 Admin Panel
+            </button>
+          )}
+          <span className="welcome-text">Welcome, {user?.username}!</span>
+          <button onClick={logout} className="btn-logout">
+            Logout
+          </button>
+        </div>
       </header>
 
       {error && <div className="error-message">{error}</div>}
