@@ -15,7 +15,7 @@ terraform {
   # Terraform Cloud Backend
   cloud {
     organization = "dukx"
-    
+
     workspaces {
       name = "devops-pipeline-infrastructure"
     }
