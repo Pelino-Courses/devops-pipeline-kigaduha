@@ -158,3 +158,4 @@ id_dsa
 .cache/
 tmp/
 temp/
+AZURE_CREDENTIALS_SETUP.md
