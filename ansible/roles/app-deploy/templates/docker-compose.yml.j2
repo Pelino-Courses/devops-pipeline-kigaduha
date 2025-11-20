@@ -4,16 +4,18 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: devops-postgres
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: {{ db_user }}
-      POSTGRES_PASSWORD: {{ db_password }}
-      POSTGRES_DB: {{ db_name }}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U {{ db_user }}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,10 +24,12 @@ services:
   backend:
     image: {{ acr_login_server }}/devops-pipeline-kigaduha-backend:{{ image_tag }}
     container_name: devops-backend
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: postgresql://{{ db_user }}:{{ db_password }}@postgres:5432/{{ db_name }}
+      DATABASE_URL: ${DATABASE_URL}
       FLASK_ENV: production
-      SECRET_KEY: {{ secret_key }}
+      SECRET_KEY: ${SECRET_KEY}
     ports:
       - "5000:5000"
     depends_on:
@@ -42,8 +46,10 @@ services:
   frontend:
     image: {{ acr_login_server }}/devops-pipeline-kigaduha-frontend:{{ image_tag }}
     container_name: devops-frontend
+    env_file:
+      - .env
     environment:
-      REACT_APP_API_URL: http://{{ vm_public_ip }}:5000
+      REACT_APP_API_URL: ${REACT_APP_API_URL}
     ports:
       - "80:80"
     depends_on:
