@@ -200,8 +200,8 @@ jobs:
           # Initialize Terraform
           terraform init
 
-          # Apply with fresh state
-          terraform apply -auto-approve \
+          # Apply with fresh state (refresh to detect missing resources)
+          terraform apply -auto-approve -refresh=true \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
             -var="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
             -var="client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
