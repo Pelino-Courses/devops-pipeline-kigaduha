@@ -180,7 +180,7 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        run: terraform init
+        run: terraform init -reconfigure
 
       - name: Terraform Plan
         working-directory: ./terraform
@@ -247,6 +247,6 @@ jobs:
 
       - name: Display deployment URL
         run: |
-          echo "🚀 Deployment completed!"
+          echo "Deployment completed!"
           echo "Frontend URL: http://${{ steps.tf_output.outputs.vm_public_ip }}"
           echo "Backend API: http://${{ steps.tf_output.outputs.vm_public_ip }}:5000"
