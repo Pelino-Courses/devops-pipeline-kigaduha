@@ -165,6 +165,13 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Generate SSH key if not exists
+        run: |
+          if [ ! -f ~/.ssh/id_rsa.pub ]; then
+            ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
+          fi
+          echo "SSH_PUBLIC_KEY=$(cat ~/.ssh/id_rsa.pub)" >> $GITHUB_ENV
+
       - name: Terraform Init
         working-directory: ./terraform
         env:
@@ -183,7 +190,13 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        run: terraform plan -out=tfplan
+        run: |
+          terraform plan -out=tfplan \
+            -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+            -var="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+            -var="client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+            -var="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
+            -var="ssh_public_key=${SSH_PUBLIC_KEY}"
 
       - name: Terraform Apply
         working-directory: ./terraform
