@@ -21,14 +21,14 @@ def client():
 def auth_headers(client):
     """Create authentication headers with valid token"""
     # Register and login as a test user
-    client.post("/api/v1/auth/register", 
+    client.post("/api/v1/auth/register",
                 data=json.dumps({"username": "testuser", "password": "testpass123"}),
                 content_type="application/json")
-    
+
     response = client.post("/api/v1/auth/login",
                           data=json.dumps({"username": "testuser", "password": "testpass123"}),
                           content_type="application/json")
-    
+
     token = response.get_json()["token"]
     return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 
@@ -83,7 +83,7 @@ def test_get_single_task(client, auth_headers):
     task_data = {"title": "Task to Get", "description": "Test task"}
     create_response = client.post("/api/v1/tasks", data=json.dumps(task_data), headers=auth_headers)
     task_id = create_response.get_json()["id"]
-    
+
     response = client.get(f"/api/v1/tasks/{task_id}", headers=auth_headers)
     assert response.status_code == 200
     data = response.get_json()
@@ -103,7 +103,7 @@ def test_update_task(client, auth_headers):
     task_data = {"title": "Task to Update", "description": "Test task"}
     create_response = client.post("/api/v1/tasks", data=json.dumps(task_data), headers=auth_headers)
     task_id = create_response.get_json()["id"]
-    
+
     update_data = {"status": "completed"}
     response = client.put(f"/api/v1/tasks/{task_id}", data=json.dumps(update_data), headers=auth_headers)
     assert response.status_code == 200
