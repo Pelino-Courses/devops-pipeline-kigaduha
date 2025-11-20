@@ -29,7 +29,7 @@ variable "tenant_id" {
 variable "location" {
   description = "Azure region for resources"
   type        = string
-  default     = "francecentral"
+  default     = "eastus"
 }
 
 variable "environment" {

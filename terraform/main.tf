@@ -1,5 +1,12 @@
 # Terraform Configuration for DevOps Pipeline Infrastructure - Azure
 
+# Random suffix for globally unique names
+resource "random_string" "acr_suffix" {
+  length  = 6
+  special = false
+  upper   = false
+}
+
 # Resource Group
 resource "azurerm_resource_group" "main" {
   name     = "${var.project_name}-${var.environment}-rg"
@@ -167,7 +174,7 @@ resource "azurerm_linux_virtual_machine" "main" {
 
 # Container Registry
 resource "azurerm_container_registry" "main" {
-  name                = replace("${var.project_name}${var.environment}acr", "-", "")
+  name                = lower(replace("${var.project_name}${var.environment}acr${random_string.acr_suffix.result}", "-", ""))
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   sku                 = "Basic"
