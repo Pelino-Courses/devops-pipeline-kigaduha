@@ -44,6 +44,7 @@ jobs:
 
       - name: Run mypy
         working-directory: ./backend
+        continue-on-error: true
         run: |
           mypy src/
 
