@@ -27,7 +27,7 @@ def client():
 def auth_headers(client):
     """Create authentication headers with valid token"""
     # Register a test user (ignore if it already exists)
-    reg_response = client.post(
+    client.post(
         "/api/v1/auth/register",
         data=json.dumps({"username": "testuser", "email": "test@test.com", "password": "testpass123"}),
         content_type="application/json",
