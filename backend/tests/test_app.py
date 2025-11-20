@@ -15,8 +15,10 @@ def client():
     app.config["TESTING"] = True
     # Clear users dict before each test
     from src.auth import users
+
     users.clear()
     from src.auth import initialize_admin
+
     initialize_admin()  # Re-initialize admin user
     with app.test_client() as client:
         yield client
