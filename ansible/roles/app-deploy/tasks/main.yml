@@ -1,0 +1,73 @@
+---
+# Deploy application using Docker Compose
+
+- name: Create application directory
+  file:
+    path: /opt/devops-app
+    state: directory
+    mode: "0755"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Log in to Azure Container Registry
+  docker_login:
+    registry: "{{ acr_login_server }}"
+    username: "{{ acr_username }}"
+    password: "{{ acr_password }}"
+  when: acr_login_server is defined
+
+- name: Copy docker-compose.yml template
+  template:
+    src: docker-compose.yml.j2
+    dest: /opt/devops-app/docker-compose.yml
+    mode: "0644"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Copy .env file
+  template:
+    src: .env.j2
+    dest: /opt/devops-app/.env
+    mode: "0600"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Pull latest Docker images
+  command: docker compose pull
+  args:
+    chdir: /opt/devops-app
+  register: pull_result
+  changed_when: "'Pulled' in pull_result.stdout"
+
+- name: Stop existing containers
+  command: docker compose down
+  args:
+    chdir: /opt/devops-app
+  ignore_errors: yes
+
+- name: Start application containers
+  command: docker compose up -d
+  args:
+    chdir: /opt/devops-app
+  register: compose_up
+  changed_when: "'Started' in compose_up.stdout or 'Created' in compose_up.stdout"
+
+- name: Wait for backend to be healthy
+  uri:
+    url: "http://localhost:5000/health"
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 30
+  delay: 2
+
+- name: Display application status
+  command: docker compose ps
+  args:
+    chdir: /opt/devops-app
+  register: app_status
+  changed_when: false
+
+- name: Show application status
+  debug:
+    var: app_status.stdout_lines

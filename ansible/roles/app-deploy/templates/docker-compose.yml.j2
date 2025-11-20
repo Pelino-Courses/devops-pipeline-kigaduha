@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: devops-postgres
+    environment:
+      POSTGRES_USER: {{ db_user }}
+      POSTGRES_PASSWORD: {{ db_password }}
+      POSTGRES_DB: {{ db_name }}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{ db_user }}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    image: {{ acr_login_server }}/devops-pipeline-kigaduha-backend:{{ image_tag }}
+    container_name: devops-backend
+    environment:
+      DATABASE_URL: postgresql://{{ db_user }}:{{ db_password }}@postgres:5432/{{ db_name }}
+      FLASK_ENV: production
+      SECRET_KEY: {{ secret_key }}
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  frontend:
+    image: {{ acr_login_server }}/devops-pipeline-kigaduha-frontend:{{ image_tag }}
+    container_name: devops-frontend
+    environment:
+      REACT_APP_API_URL: http://{{ vm_public_ip }}:5000
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local

@@ -1,0 +1,9 @@
+plugin: azure.azcollection.azure_rm
+include_vm_resource_groups:
+  - devopspipeline-dev-rg
+auth_source: auto
+keyed_groups:
+  - key: tags.environment
+    prefix: env
+  - key: tags.role
+    prefix: role

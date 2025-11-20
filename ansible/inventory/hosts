@@ -1,0 +1,6 @@
+[webservers]
+# Azure VM will be dynamically discovered via azure_rm.yml
+
+[all:vars]
+ansible_user=azureuser
+ansible_python_interpreter=/usr/bin/python3
