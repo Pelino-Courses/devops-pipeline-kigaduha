@@ -6,7 +6,6 @@ import bcrypt
 import jwt
 from flask import jsonify, request
 
-
 # Configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
 JWT_ALGORITHM = "HS256"
