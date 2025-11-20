@@ -232,8 +232,8 @@ jobs:
 
       - name: Test docker-compose build
         run: |
-          docker-compose build
-          docker-compose config
+          docker compose build
+          docker compose config
 
   code-quality:
     name: Code Quality Checks
