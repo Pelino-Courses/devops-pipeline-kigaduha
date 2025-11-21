@@ -200,9 +200,16 @@ jobs:
           # Initialize Terraform
           terraform init
 
-          # Apply with fresh state (force replace resource group to sync state)
-          terraform apply -auto-approve -refresh=true \
-            -replace="azurerm_resource_group.main" \
+          # Destroy any existing infrastructure to sync state
+          terraform destroy -auto-approve \
+            -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+            -var="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+            -var="client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+            -var="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
+            -var="ssh_public_key=${SSH_PUBLIC_KEY}" || true
+
+          # Apply infrastructure
+          terraform apply -auto-approve \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
             -var="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
             -var="client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
