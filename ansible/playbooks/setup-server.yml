@@ -11,14 +11,17 @@
     db_name: "{{ lookup('env', 'DB_NAME') | default('taskdb', true) }}"
 
     # Container Registry configuration
-    acr_login_server: "{{ lookup('env', 'ACR_LOGIN_SERVER') }}"
+    docker_registry: "{{ lookup('env', 'DOCKER_REGISTRY') | default('ghcr.io', true) }}"
+    image_name: "{{ lookup('env', 'IMAGE_NAME') | default('pelino-courses/devops-pipeline-kigaduha', true) }}"
+    registry_username: "{{ lookup('env', 'REGISTRY_USERNAME') }}"
+    registry_password: "{{ lookup('env', 'REGISTRY_PASSWORD') }}"
     acr_username: "{{ lookup('env', 'ACR_USERNAME') | default('00000000-0000-0000-0000-000000000000', true) }}"
     acr_password: "{{ lookup('env', 'ACR_PASSWORD') | default(lookup('env', 'AZURE_CLIENT_SECRET'), true) }}"
 
     # Application configuration
     image_tag: "{{ lookup('env', 'IMAGE_TAG') | default('main', true) }}"
     secret_key: "{{ lookup('env', 'SECRET_KEY') | default(lookup('password', '/dev/null length=32 chars=ascii_letters'), true) }}"
-    vm_public_ip: "{{ ansible_default_ipv4.address }}"
+    vm_public_ip: "{{ ansible_facts['default_ipv4']['address'] }}"
 
   pre_tasks:
     - name: Wait for system to be ready
@@ -32,8 +35,8 @@
       assert:
         that:
           - db_password is defined and db_password != ''
-          - acr_login_server is defined and acr_login_server != ''
-        fail_msg: "Required environment variables are not set. Check DB_PASSWORD and ACR_LOGIN_SERVER."
+          - docker_registry is defined and docker_registry != ''
+        fail_msg: "Required environment variables are not set. Check DB_PASSWORD and DOCKER_REGISTRY."
 
   roles:
     - docker

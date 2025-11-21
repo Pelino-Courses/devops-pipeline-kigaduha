@@ -228,6 +228,10 @@ jobs:
           pip install ansible
           ansible-galaxy collection install azure.azcollection community.docker
 
+      - name: Get short SHA for image tag
+        id: short_sha
+        run: echo "short_sha=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
+
       - name: Run Ansible deployment
         working-directory: ./ansible
         env:
@@ -235,10 +239,11 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          ACR_LOGIN_SERVER: ${{ steps.tf_output.outputs.acr_login_server }}
-          ACR_USERNAME: ${{ secrets.AZURE_CLIENT_ID }}
-          ACR_PASSWORD: ${{ secrets.AZURE_CLIENT_SECRET }}
-          IMAGE_TAG: ${{ github.ref_name }}-${{ github.sha }}
+          DOCKER_REGISTRY: ${{ env.DOCKER_REGISTRY }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          REGISTRY_USERNAME: ${{ github.actor }}
+          REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_TAG: ${{ github.ref_name }}-${{ steps.short_sha.outputs.short_sha }}
           DB_USER: postgres
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: taskdb
