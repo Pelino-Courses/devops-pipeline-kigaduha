@@ -197,13 +197,31 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: |
-          # Clean local state
-          rm -rf .terraform/
-          rm -f .terraform.lock.hcl
-          rm -f terraform.tfstate*
-
           # Initialize Terraform
           terraform init
+
+          # Check if infrastructure exists and import if needed
+          if az group exists --name devopspipeline-dev-rg | grep -q true; then
+            echo "📦 Infrastructure exists. Checking Terraform state..."
+            
+            # Try to refresh state, if it fails, import the resource group
+            if ! terraform plan -detailed-exitcode \
+              -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+              -var="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+              -var="client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+              -var="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
+              -var="ssh_public_key=${SSH_PUBLIC_KEY}" 2>&1 | grep -q "already exists"; then
+              echo "✅ State is in sync"
+            else
+              echo "🔄 Importing existing resource group into Terraform state..."
+              terraform import \
+                -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
+                -var="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
+                -var="client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
+                -var="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
+                azurerm_resource_group.main "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/devopspipeline-dev-rg" || echo "Already imported"
+            fi
+          fi
 
           # Apply infrastructure (creates if not exists, updates if needed)
           # This will NOT destroy existing resources, keeping your IP and data
