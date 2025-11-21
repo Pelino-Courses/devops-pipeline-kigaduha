@@ -201,30 +201,30 @@ jobs:
           terraform init
 
           # Check if infrastructure exists and import if needed
+          echo "🔍 Checking if resource group exists in Azure..."
           if az group exists --name devopspipeline-dev-rg | grep -q true; then
-            echo "📦 Infrastructure exists. Checking Terraform state..."
+            echo "📦 Resource group exists in Azure. Attempting to import into Terraform state..."
             
-            # Try to refresh state, if it fails, import the resource group
-            if ! terraform plan -detailed-exitcode \
+            # Try to import (will fail gracefully if already in state)
+            terraform import \
               -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
               -var="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
               -var="client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
               -var="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
-              -var="ssh_public_key=${SSH_PUBLIC_KEY}" 2>&1 | grep -q "already exists"; then
-              echo "✅ State is in sync"
+              azurerm_resource_group.main "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/devopspipeline-dev-rg" 2>&1 | tee import.log || true
+            
+            # Check if import was successful or resource already in state
+            if grep -q "Successfully imported\|Resource already managed" import.log; then
+              echo "✅ Resource group is now in Terraform state"
             else
-              echo "🔄 Importing existing resource group into Terraform state..."
-              terraform import \
-                -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
-                -var="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
-                -var="client_secret=${{ secrets.AZURE_CLIENT_SECRET }}" \
-                -var="tenant_id=${{ secrets.AZURE_TENANT_ID }}" \
-                azurerm_resource_group.main "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/devopspipeline-dev-rg" || echo "Already imported"
+              echo "⚠️ Import had issues, but continuing..."
             fi
+          else
+            echo "✨ No existing resource group found. Will create new infrastructure."
           fi
 
           # Apply infrastructure (creates if not exists, updates if needed)
-          # This will NOT destroy existing resources, keeping your IP and data
+          echo "🚀 Applying Terraform configuration..."
           terraform apply -auto-approve \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
             -var="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
