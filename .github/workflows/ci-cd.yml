@@ -189,27 +189,6 @@ jobs:
       #       done
       #     fi
 
-      # One-time cleanup - will be removed after first successful deployment
-      - name: One-time cleanup of orphaned resources
-        continue-on-error: true
-        run: |
-          echo "🧹 Checking for orphaned resource group..."
-          if az group exists --name devopspipeline-dev-rg | grep -q true; then
-            echo "🗑️ Deleting orphaned resource group (one-time operation)..."
-            az group delete --name devopspipeline-dev-rg --yes --no-wait
-            
-            echo "⏳ Waiting for deletion to complete..."
-            for i in {1..60}; do
-              if az group exists --name devopspipeline-dev-rg | grep -q false; then
-                echo "✅ Cleanup complete after $((i*10))s"
-                break
-              fi
-              sleep 10
-            done
-          else
-            echo "✅ No orphaned resources found"
-          fi
-
       - name: Terraform Init and Apply
         working-directory: ./terraform
         env:
