@@ -201,29 +201,10 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: |
-          # Initialize Terraform
           terraform init
 
-          # Delete orphaned resources (faster than import which hangs)
-          echo "🔍 Checking for orphaned resources..."
-          if ! terraform state list 2>/dev/null | grep -q "azurerm_resource_group.main"; then
-            if az group exists --name devopspipeline-dev-rg | grep -q true; then
-              echo "🗑️ Deleting orphaned resource group..."
-              az group delete --name devopspipeline-dev-rg --yes --no-wait
-              for i in {1..30}; do
-                if az group exists --name devopspipeline-dev-rg | grep -q false; then
-                  echo "✅ Cleanup complete"
-                  break
-                fi
-                sleep 10
-              done
-            fi
-          else
-            echo "✅ Resources properly tracked"
-          fi
-
-          # Apply with refresh to sync any existing infrastructure
-          # No -replace flags = infrastructure is preserved across deployments
+          # Just apply - Terraform will handle existing resources automatically
+          # Resources are never deleted, only updated
           terraform apply -auto-approve \
             -var="subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" \
             -var="client_id=${{ secrets.AZURE_CLIENT_ID }}" \
@@ -271,13 +252,18 @@ jobs:
           ${{ steps.tf_output.outputs.vm_public_ip }} ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_ssh_common_args='-o StrictHostKeyChecking=no'
           EOF
 
-          # Wait for VM to be ready
-          sleep 60
+          # Wait for SSH to be available (not 60s for new VM)
+          echo "Checking SSH connectivity..."
+          for i in {1..6}; do
+            if ansible all -m ping -i inventory/hosts.ini 2>/dev/null; then
+              echo "✅ VM is reachable"
+              break
+            fi
+            echo "Waiting for SSH... ($i/6)"
+            sleep 10
+          done
 
-          # Test connectivity
-          ansible all -m ping -i inventory/hosts.ini
-
-          # Deploy application
+          # Deploy application (only updates Docker containers on existing VM)
           ansible-playbook playbooks/setup-server.yml -i inventory/hosts.ini -vv
 
       - name: Display deployment URL
