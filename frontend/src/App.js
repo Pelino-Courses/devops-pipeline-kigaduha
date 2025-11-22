@@ -287,7 +287,7 @@ function App() {
         <div className="tasks-section">
           <div className="filter-buttons">
             <button className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}>
-              All Created Task
+              All
             </button>
             <button
               className={filter === 'pending' ? 'active' : ''}
