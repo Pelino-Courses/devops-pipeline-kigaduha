@@ -279,7 +279,7 @@ function App() {
               <option value="high">High Priority</option>
             </select>
             <button type="submit" className="btn-primary">
-              Add Task
+              Add New
             </button>
           </form>
         </div>
