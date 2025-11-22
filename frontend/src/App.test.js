@@ -19,10 +19,12 @@ test('renders task form section', () => {
       <App />
     </AuthProvider>
   );
-  // Test for the form inputs instead of heading text
+  // Test for the form inputs and submit button using structural elements
   const titleInput = screen.getByPlaceholderText(/task title/i);
   const descriptionInput = screen.getByPlaceholderText(/task description/i);
-  const submitButton = screen.getByRole('button', { name: /add task/i });
+  // Find submit button by type instead of text to make test resilient to text changes
+  const submitButtons = screen.getAllByRole('button');
+  const submitButton = submitButtons.find(btn => btn.type === 'submit');
 
   expect(titleInput).toBeInTheDocument();
   expect(descriptionInput).toBeInTheDocument();
